@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penerjemah Bahasa Banggai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-3xl w-full">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">Penerjemah Bahasa Banggai</h1>
+        <p class="text-center text-gray-500 mb-8">
+            Terjemahkan teks dari Bahasa Indonesia, Inggris, atau Banggai.
+        </p>
+
+        <!-- Kontainer untuk pilihan bahasa -->
+        <div class="flex items-center justify-between space-x-2 mb-6 border-b border-gray-200 pb-4">
+            <select id="source-lang" class="flex-1 p-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-700">
+                <option value="id">Indonesia</option>
+                <option value="en">Inggris</option>
+                <option value="banggai">Banggai</option>
+            </select>
+
+            <button id="swap-btn" class="p-3 bg-white text-gray-600 rounded-full shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 rotate-90" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 7h3v7.01h2V7h3L9 3z"/>
+                </svg>
+            </button>
+
+            <select id="target-lang" class="flex-1 p-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-700">
+                <option value="banggai">Banggai</option>
+                <option value="id">Indonesia</option>
+                <option value="en">Inggris</option>
+            </select>
+        </div>
+
+        <!-- Kontainer untuk input dan output -->
+        <div class="space-y-6 md:flex md:space-x-4 md:space-y-0">
+            <!-- Area teks input -->
+            <div class="flex-1">
+                <label for="input-text" class="block text-sm font-medium text-gray-700 mb-2">Teks Sumber</label>
+                <textarea id="input-text" rows="10" placeholder="Masukkan teks di sini..." class="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"></textarea>
+                <div class="text-center mt-4">
+                    <button id="check-grammar-btn" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all transform hover:scale-105 hidden">
+                        Periksa Tata Bahasa ✨
+                    </button>
+                </div>
+            </div>
+
+            <!-- Area teks output -->
+            <div class="flex-1">
+                <label for="output-text" class="block text-sm font-medium text-gray-700 mb-2">Hasil Terjemahan</label>
+                <div class="flex items-center space-x-2">
+                    <textarea id="output-text" rows="10" placeholder="Terjemahan Anda akan muncul di sini." readonly class="w-full p-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-800 resize-none"></textarea>
+                    <button id="listen-btn" class="text-gray-600 hover:text-blue-600 hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
+                            <path d="M13.5 4.5a1.5 1.5 0 0 0-1.5 1.5v4.257c0 .546.512 1.004 1.054.915a7.5 7.5 0 0 0 7.436-7.399 1.5 1.5 0 0 0-1.554-1.463A1.5 1.5 0 0 0 13.5 4.5ZM7.5 6a1.5 1.5 0 0 0-1.5 1.5v3.633c0 .546.512 1.004 1.054.915a7.5 7.5 0 0 0 7.436-7.399 1.5 1.5 0 0 0-1.554-1.463A1.5 1.5 0 0 0 7.5 6Zm7.5 6a1.5 1.5 0 0 0-1.5 1.5v3.633c0 .546.512 1.004 1.054.915a7.5 7.5 0 0 0 7.436-7.399 1.5 1.5 0 0 0-1.554-1.463A1.5 1.5 0 0 0 15 12Zm-7.5 6a1.5 1.5 0 0 0-1.5 1.5v1.257c0 .546.512 1.004 1.054.915a7.5 7.5 0 0 0 7.436-7.399 1.5 1.5 0 0 0-1.554-1.463A1.5 1.5 0 0 0 7.5 18Z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pesan Status -->
+        <div id="status-message" class="text-center mt-4 text-gray-600 italic"></div>
+
+        <!-- Kolom Hasil Pemrosesan AI -->
+        <div id="ai-processing-section" class="mt-8 pt-6 border-t border-gray-200">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Hasil Pemrosesan AI</h2>
+            <p class="text-center text-gray-500 mb-6">Ini adalah hasil terjemahan langsung dari AI.</p>
+            <textarea id="ai-raw-output" rows="5" placeholder="Hasil mentah dari AI akan muncul di sini." readonly class="w-full p-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-800 resize-none"></textarea>
+        </div>
+        
+        <!-- Kolom Hasil Pemeriksaan Tata Bahasa -->
+        <div id="grammar-check-section" class="mt-8 pt-6 border-t border-gray-200 hidden">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Hasil Pemeriksaan Tata Bahasa</h2>
+            <div id="grammar-check-output" class="p-4 bg-gray-100 rounded-xl text-gray-800 whitespace-pre-wrap"></div>
+        </div>
+
+        <!-- Kolom Pelatihan AI -->
+        <div id="ai-training-section" class="mt-8 pt-6 border-t border-gray-200">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Pelatihan AI</h2>
+            <p class="text-center text-gray-500 mb-6">Ajari AI aturan atau kekhasan baru dalam Bahasa Banggai. Aturan ini akan diingat untuk terjemahan di masa depan.</p>
+            <textarea id="ai-training-input" rows="5" placeholder="Contoh: 'dalam bahasa banggai Yaku bisa di tulis juga ia'u, karena dalam bahasa banggai bunyi K kebanyakan berbunyi glotal'" class="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"></textarea>
+            <div class="text-center mt-6">
+                <button id="submit-training-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all transform hover:scale-105">
+                    Kirim Pelatihan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, addDoc, query, where, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Gunakan variabel global yang disediakan oleh Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inisialisasi Firebase dan Firestore
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            setLogLevel('debug'); // Aktifkan logging debug untuk Firebase
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+        }
+
+        const BANGGAI_DICTIONARY = {
+            "greetings": {
+                "Bulamo ko kabar?": "How are you?",
+                "Ano ko po plan niabudo?": "What is your plan today?"
+            },
+            "responses_expressions": {
+                "Iaku sanang tuuno": "I am very happy",
+                "Kinatauan": "Thank you",
+                "Kinatauan badang": "Thank you very much",
+                "Kinatauan badang babadang": "Thank you very very much",
+                "Iaku sanang pososung tukoy iko": "I am happy to meet you",
+                "Ano monondok nia": "I am fine",
+                "Aki-mo motolominggon koidan": "I will not forget again",
+                "Iaku hargaio tuuno": "I really appreciate it"
+            },
+            "questions": {
+                "Nde ko sambumu?": "What is your name?",
+                "Nando komu dungolan?": "Where do you live?",
+                "Ano koidan mo teali ya' tombonio?": "Is there anything else I can help with?",
+                "Demo kojamo nia?": "What time is it now?"
+            },
+            "statements": {
+                "Ko sambunggu [Nama]": "My name is [Name]",
+                "Yaku doi dungolan": "I am at home",
+                "Ode kai ko pintaro!": "You are smart!"
+            }
+        };
+
+        const BANGGAI_RULES = {
+            "name": "Robot Mo Tambongan",
+            "purpose": "Asisten belajar tukon basalita Bahasa Banggai",
+            "pronouns": "Iaku, daku, ko, iko, komu, komuiu, tukoy, tukon, sambu, sambu-ngku, sambu-mu, na",
+            "verbs": "inum, kaan, taus, useke, mobasa, batile, balimang, osulang, seeseek, molongol, lengele, motomboni, mopotikene, jawabe, ciniptakanggon, sinoboli",
+            "rules_list": [
+                "Vowel ending -> add -mo (example: Gaga -> Gagamo)",
+                "Consonant ending -> add -o (example: Cepat -> Cepato)",
+                "r -> l (example: Aturan -> Atulano)",
+                "Numbers 0-9: Nol, Meng, Lua, Tolu, Sangkap, Lima, Nom, Pitu, Walu, Sio"
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const swapBtn = document.getElementById('swap-btn');
+            const sourceLangSelect = document.getElementById('source-lang');
+            const targetLangSelect = document.getElementById('target-lang');
+            const inputTextarea = document.getElementById('input-text');
+            const outputTextarea = document.getElementById('output-text');
+            const statusMessageDiv = document.getElementById('status-message');
+            const checkGrammarBtn = document.getElementById('check-grammar-btn');
+            const grammarCheckSection = document.getElementById('grammar-check-section');
+            const grammarCheckOutput = document.getElementById('grammar-check-output');
+            const listenBtn = document.getElementById('listen-btn');
+            const aiTrainingInput = document.getElementById('ai-training-input');
+            const submitTrainingBtn = document.getElementById('submit-training-btn');
+            const aiRawOutputTextarea = document.getElementById('ai-raw-output');
+            
+            let userId = null;
+            let debounceTimeout;
+
+            // Autentikasi pengguna
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    console.log("User authenticated with UID:", userId);
+                } else {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Auth failed:", error);
+                    }
+                }
+            });
+
+            // Ganti baris di bawah ini dengan API key Anda
+            const GEMINI_API_KEY = "PASTE_YOUR_API_KEY_HERE";
+            
+            const GEMINI_TEXT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+            const GEMINI_TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${GEMINI_API_KEY}`;
+
+            // Fungsi untuk menampilkan pesan status
+            function showStatus(message, isError = false) {
+                statusMessageDiv.textContent = message;
+                statusMessageDiv.classList.remove('hidden');
+                statusMessageDiv.classList.toggle('text-red-500', isError);
+                statusMessageDiv.classList.toggle('text-gray-600', !isError);
+            }
+
+            // Fungsi untuk mencari terjemahan di dictionary lokal
+            function findInLocalDictionary(text, sourceLang, targetLang) {
+                const flatDict = {};
+                for (const category in BANGGAI_DICTIONARY) {
+                    for (const key in BANGGAI_DICTIONARY[category]) {
+                        if (sourceLang === 'banggai') {
+                            flatDict[key.toLowerCase()] = BANGGAI_DICTIONARY[category][key];
+                        } else {
+                            flatDict[BANGGAI_DICTIONARY[category][key].toLowerCase()] = key;
+                        }
+                    }
+                }
+                const translation = flatDict[text.toLowerCase()];
+                return translation || null;
+            }
+
+            // Fungsi untuk mengambil aturan pelatihan AI dari database
+            async function fetchAITrainingRules() {
+                try {
+                    const trainingRef = collection(db, `artifacts/${appId}/public/data/ai_training`);
+                    const querySnapshot = await getDocs(trainingRef);
+                    let rulesText = "";
+                    querySnapshot.forEach(doc => {
+                        rulesText += doc.data().ruleText + "\n";
+                    });
+                    return rulesText;
+                } catch (error) {
+                    console.error("Gagal mengambil aturan pelatihan AI:", error);
+                    return "";
+                }
+            }
+
+            // Fungsi untuk menangani proses terjemahan
+            async function translateText() {
+                const sourceLang = sourceLangSelect.value;
+                const targetLang = targetLangSelect.value;
+                const inputText = inputTextarea.value.trim();
+
+                grammarCheckSection.classList.add('hidden');
+                aiRawOutputTextarea.value = "";
+                
+                if (sourceLang === targetLang) {
+                    outputTextarea.value = inputText;
+                    showStatus("Bahasa sumber dan target sama.", false);
+                    return;
+                }
+
+                if (!inputText) {
+                    outputTextarea.value = "Terjemahan Anda akan muncul di sini.";
+                    showStatus("", false);
+                    return;
+                }
+                
+                // Tampilkan pesan loading sebelum terjemahan dimulai
+                outputTextarea.value = "";
+                showStatus("Sedang menerjemahkan...", false);
+                listenBtn.classList.add('hidden');
+                
+                try {
+                    // Tampilkan tombol periksa tata bahasa jika bahasa sumber adalah Banggai
+                    if (sourceLang === 'banggai') {
+                        checkGrammarBtn.classList.remove('hidden');
+                    } else {
+                        checkGrammarBtn.classList.add('hidden');
+                    }
+
+                    // Cek basis data terlebih dahulu
+                    const translationsRef = collection(db, `artifacts/${appId}/public/data/translations`);
+                    const q = query(translationsRef, where("sourceText", "==", inputText), where("sourceLang", "==", sourceLang), where("targetLang", "==", targetLang));
+                    const querySnapshot = await getDocs(q);
+                    
+                    if (!querySnapshot.empty) {
+                        // Terjemahan ditemukan di database
+                        const doc = querySnapshot.docs[0];
+                        const translatedText = doc.data().userCorrection;
+                        outputTextarea.value = translatedText;
+                        showStatus("Terjemahan ditemukan di basis data.", false);
+                        listenBtn.classList.remove('hidden');
+                    } else {
+                        // Cek di dictionary lokal
+                        const localTranslation = findInLocalDictionary(inputText, sourceLang, targetLang);
+                        if (localTranslation) {
+                            outputTextarea.value = localTranslation;
+                            showStatus("Terjemahan ditemukan di kamus lokal.", false);
+                            listenBtn.classList.remove('hidden');
+                        } else {
+                            // Terjemahan tidak ditemukan, gunakan AI sebagai fallback
+                            showStatus("Terjemahan tidak ditemukan. Menggunakan AI...", false);
+                            
+                            // Ambil aturan pelatihan AI dari database
+                            const aiTrainingRules = await fetchAITrainingRules();
+                            
+                            const rulesPrompt = BANGGAI_RULES.rules_list.join('\n');
+                            const prompt = `Act as a professional translator for Bahasa Banggai. Your name is 'Robot Mo Tambongan'. Your task is to provide a concise and direct translation of the user's text. Use the provided BANGGAI_RULES and Vocabulary to guide your translation. Respond only with the translated text, without any explanation or additional commentary.
+                            
+                            Rules:
+                            ${rulesPrompt}
+                            
+                            Additional Rules from User:
+                            ${aiTrainingRules}
+                            
+                            Vocabulary:
+                            ${JSON.stringify(BANGGAI_DICTIONARY, null, 2)}
+                            
+                            Source Text: "${inputText}"
+                            Source Language: "${sourceLang}"
+                            Target Language: "${targetLang}"
+                            
+                            Translation:`;
+                            
+                            const payload = {
+                                contents: [{ parts: [{ text: prompt }] }]
+                            };
+
+                            const response = await fetch(GEMINI_TEXT_API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`API error: ${response.status} ${response.statusText}`);
+                            }
+
+                            const result = await response.json();
+                            const translatedText = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+                            if (translatedText) {
+                                outputTextarea.value = translatedText;
+                                aiRawOutputTextarea.value = translatedText;
+                                showStatus("Terjemahan AI berhasil.", false);
+                                listenBtn.classList.remove('hidden');
+                            } else {
+                                outputTextarea.value = "Terjemahan AI tidak berhasil.";
+                                aiRawOutputTextarea.value = "Tidak ada hasil dari AI.";
+                                showStatus("Terjemahan AI gagal. Silakan berikan koreksi.", true);
+                                listenBtn.classList.add('hidden');
+                
